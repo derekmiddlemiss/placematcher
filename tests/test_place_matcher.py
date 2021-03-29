@@ -73,10 +73,37 @@ def test_init_with_df_wrong_key_raises_keyerror(places_df_wrong_key):
     with pytest.raises(KeyError):
         PlaceMatcher(places_df_wrong_key)
         
-### 
+### Test basic features
 
-def test_use_first_works(matcher_usefirst_nothresh):
+def test_small_dist(matcher_nousefirst_nothresh):
+    assert matcher_nousefirst_nothresh.match("Brogadoon") == "Brigadoon"
+    
+def test_large_dist(matcher_nousefirst_nothresh):
+    assert matcher_nousefirst_nothresh.match("Brogandine") == "Brigadoon"
+    
+def test_strips_whitespace_start_end_ref_and_tomatch(matcher_nousefirst_nothresh):
+    assert matcher_nousefirst_nothresh.match("   Arbroath  ") == "Arbroath"
+
+def test_case_equal_dist_returns_unknown(matcher_nousefirst_nothresh):
+    assert matcher_nousefirst_nothresh.match("Panicuik") == "Unknown"
+    assert matcher_nousefirst_nothresh.match("Panicook") == "Unknown"
+    
+def test_deals_with_accented_letters(matcher_nousefirst_nothresh, 
+                                     matcher_usefirst_nothresh):
+    assert matcher_nousefirst_nothresh.match("Eirisgeigh") == "Èirisgeigh"
+    assert matcher_usefirst_nothresh.match("Eirisgeigh") == "Unknown"
+        
+### Test use_first argument
+
+def test_usefirst_works(matcher_usefirst_nothresh):
     assert matcher_usefirst_nothresh.match("Brogadon") == "Brigadoon"
 
-def test_use_first_no_match_diff_first(matcher_usefirst_nothresh):
+def test_usefirst_no_match_diff_first(matcher_usefirst_nothresh):
     assert matcher_usefirst_nothresh.match("Crigadoon") == "Unknown"
+    
+def test_nousefirst_match_diff_first(matcher_nousefirst_nothresh):
+    assert matcher_nousefirst_nothresh.match("Crigadoon") == "Brigadoon"
+    
+def test_usefirst_ignores_puntuation(matcher_usefirst_nothresh):
+    assert matcher_usefirst_nothresh.match("Sconnay") == "'Sconny"
+    

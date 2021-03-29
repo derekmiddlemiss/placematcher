@@ -30,6 +30,8 @@ class PlaceMatcher:
         self._use_first = use_first
         if unknown_thresh is None:
             self._unknown_thresh = math.inf
+        elif unknown_thresh == "exact":
+            self._unknown_thresh = 0
         else:
             self._unknown_thresh = unknown_thresh
         if self._use_first:
@@ -65,32 +67,28 @@ class PlaceMatcher:
         if self._use_first:
             key = self.any_letter.search(to_match).group()
             scoring_names = self._scoring_names.get(key, None)
-            if scoring_names is None: return "Unknown"
+            ref_names = self._ref_names.get(key, None)
+            if scoring_names is None or ref_names is None: 
+                return "Unknown"
         else:
             scoring_names = self._scoring_names
+            ref_names = self._ref_names
             
-        lowest_score = math.inf
-        lowest_score_unique = True
+        lowest_dist = math.inf
+        lowest_dist_unique = True
         for index, name in enumerate(scoring_names):
-            score = distance(to_match, name)
-            if score < lowest_score:
-                lowest_score = score
-                lowest_score_unique = True
-                if self._use_first:
-                    lowest_pos = {"key": key, "index": index}
-                else:
-                    lowest_pos = {"index": index}
-            elif score == lowest_score:
-                lowest_score_unique = False
+            dist = distance(to_match, name)
+            if dist < lowest_dist:
+                lowest_dist = dist
+                lowest_dist_unique = True
+                lowest_dist_pos = index
+            elif dist == lowest_dist:
+                lowest_dist_unique = False
         
-        if not lowest_score_unique or lowest_score >= self._unknown_thresh:
+        if not lowest_dist_unique or lowest_dist >= self._unknown_thresh:
             return "Unknown"
         else:
-            if self._use_first:
-                return self._ref_names[lowest_pos["key"]][lowest_pos["index"]]
-            else:
-                return self._ref_names[lowest_pos["index"]]
-                
+            return ref_names[lowest_dist_pos]                
                     
             
         
